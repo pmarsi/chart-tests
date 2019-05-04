@@ -1,0 +1,16 @@
+apiVersion: v1
+entries:
+  tcs-core-k8s:
+  - apiVersion: v1
+    appVersion: 0.1.0
+    created: 2019-05-04T20:26:36.578016+02:00
+    description: A Helm chart for Kubernetes
+    digest: 643f88ead501a49f19ca497b40d560215e2498b378cef7ff25f028a91ac87377
+    maintainers:
+    - email: mp.videoprojects@gmail.com
+      name: mp-projects
+    name: tcs-core-k8s
+    urls:
+    - https://pmarsi.github.io/chart-tests/tcs-core-k8s-0.1.0.tgz
+    version: 0.1.0
+generated: 2019-05-04T20:26:36.574754+02:00

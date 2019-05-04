@@ -1,0 +1,24 @@
+tcsCore:
+    # namespace is the namespace used for all the objects of tcs-core
+    namespace: tcs-core
+    debug: false
+    debugPort: 5678
+    Api:
+        # apiImage is the docker image of tcs-core-api
+        image: registry.gitlab.com/mp-projects/tv-up/tcs-core-api:develop
+        port: 8080
+    Packager:
+        # packagerImage is the docker image of shaka package
+        image: google/shaka-packager
+        udpReuse: true
+        udpBuffer: 52428800
+    Origin:
+        # originImage is the docker image of tcs-core-origin
+        image: registry.gitlab.com/mp-projects/tv-up/tcs-core/origin:https
+        # originUrl is the url for the tcs-core origin
+        url: http://origin.tcs-core
+        path: /origin
+    Proxy:
+        # proxyImage is the docker image of tcs-core-proxy
+        image: registry.gitlab.com/mp-projects/tv-up/tcs-core/proxy
+    

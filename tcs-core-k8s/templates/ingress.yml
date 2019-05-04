@@ -1,0 +1,93 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: tcs-ingress
+  namespace: {{ .Values.tcsCore.namespace }} 
+  annotations:
+   kubernetes.io/ingress.class: traefik
+   traefik.ingress.kubernetes.io/redirect-regex: ^http://api.tcs-core/$
+   traefik.ingress.kubernetes.io/redirect-replacement: http://api.tcs-core/v1/ui
+spec:
+  rules:
+    - host: api.tcs-core
+      http:
+        paths:
+        - path: /
+          backend:
+            serviceName: tcs-api
+            servicePort: api      
+    - host: origin.tcs-core
+      http:
+        paths:
+        - path: /
+          backend:
+            serviceName: tcs-origin
+            servicePort: origin
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: weave-ingress
+  namespace: weave    
+  annotations:
+   kubernetes.io/ingress.class: traefik
+   traefik.ingress.kubernetes.io/auth-type: "basic"
+   traefik.ingress.kubernetes.io/auth-secret: "weave-secret"
+spec:
+  rules:
+    - host: weave.tcs-core
+      http:
+        paths:
+        - path: /
+          backend:
+            serviceName: weave-scope-app
+            servicePort: 80
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: traefik-web-ui
+  namespace: kube-system
+  annotations:
+   kubernetes.io/ingress.class: traefik
+   traefik.ingress.kubernetes.io/auth-type: "basic"
+   traefik.ingress.kubernetes.io/auth-secret: "traefik-secret"
+spec:
+  rules:
+    - host: traefik.tcs-core
+      http:
+        paths:
+        - path: /
+          backend:
+            serviceName: traefik-web-ui
+            servicePort: web
+---
+# Certificate for host kubernetes.tcs-core
+apiVersion: v1
+data:
+  tls.crt: LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUREekNDQWZlZ0F3SUJBZ0lKQUptWTlCQ2NkTjlvTUEwR0NTcUdTSWIzRFFFQkN3VUFNQjR4SERBYUJnTlYKQkFNTUUydDFZbVZ5Ym1WMFpYTXVkR056TFdOdmNtVXdIaGNOTVRrd01qQXpNVEUxTmpReVdoY05NakF3TWpBegpNVEUxTmpReVdqQWVNUnd3R2dZRFZRUUREQk5yZFdKbGNtNWxkR1Z6TG5SamN5MWpiM0psTUlJQklqQU5CZ2txCmhraUc5dzBCQVFFRkFBT0NBUThBTUlJQkNnS0NBUUVBMmlIQnZ2aUZLU3ZkWWdoRWNtZTQ3MHlsL0huUWhZK24KMWJlWXlRQW9WWWJoc2FyT0NrRHZtNjBtVDlwa0lpcEJqTmVBbVNUL2RLNUtWVllQbitwK2MxSG8yODJSUHZwZwpSaUZWQlB2SzVydEpvWlJwZFRPM29RMkxPRXR0WWh3dDI0TTVKN0p4V1VWaDdJQjFZOHZ5NDBpYmc0blh3aE9uCkp6RGYwTkhDeWhsdzliNTFNRmo5TFR1UlR2S3ZtQ0ZOQWRXQWdSa0FoQ2I1SWpIazZPdXQzNDM0QmJ0bTVyS04KVEs0ZnJGRk1jSGRkWUY2Y2VzbE02SG0rdFZhcTc5R3pRcFBobHJOUEVZM0ZxUTJMbUJIcldHd25Kc2ozSDFLOAorMGxjd0FaTlR1eElEWkt6NDJVdElhaHFwYUdSNHFYcFFPZmRlNVJDeFhoNXhKekp1Rkx6MHdJREFRQUJvMUF3ClRqQWRCZ05WSFE0RUZnUVUxMGJaSENkTUJSVzZWalNsMG1ISFE1SUY5VTR3SHdZRFZSMGpCQmd3Rm9BVTEwYloKSENkTUJSVzZWalNsMG1ISFE1SUY5VTR3REFZRFZSMFRCQVV3QXdFQi96QU5CZ2txaGtpRzl3MEJBUXNGQUFPQwpBUUVBWHZsN2Y3eXNRRDAyc2ZWdEpJTEd6RFBEUkVLbmZpcnBaWC9uTzdONGFEOVFZbHFxV0piaTd3VXVzZFJFCkk1a2ZMWTRycExuNS96cSt3L1dZM3p1TWY1YnprRTZNajM4L05SUWpsRTVZYzd1Vnp0eHd5dkFUNWZPd3RFSE8KTkJRaDdSUzl3eVZ1MkJmazQ0WG10TU9FNTJ3OWQzRlFGbUs2T2JsM2lMc0l2T2Z5RUhNWTVxRzgySlNCOFZTTgpHbjVYRUhiL2NVbGIxMXBsVHlSR1FyTkNnMGM4MzVkM1lQWFNJVVpvWitVRUdTaFV6TGVMQzkzMWhuNUlrd21jCnhpWG1MRUU5K2pVWmZmV1hIMTdFcXBhQ0krTGlseFpGbDltd0xNYllXMW8rNnVKckJyTFY4blg4SndGTkptejYKblh1Mk1wQUlUSmpBM3ZScHlESFBmc2lad2c9PQotLS0tLUVORCBDRVJUSUZJQ0FURS0tLS0tCg==
+  tls.key: LS0tLS1CRUdJTiBQUklWQVRFIEtFWS0tLS0tCk1JSUV2UUlCQURBTkJna3Foa2lHOXcwQkFRRUZBQVNDQktjd2dnU2pBZ0VBQW9JQkFRRGFJY0crK0lVcEs5MWkKQ0VSeVo3anZUS1g4ZWRDRmo2ZlZ0NWpKQUNoVmh1R3hxczRLUU8rYnJTWlAybVFpS2tHTTE0Q1pKUDkwcmtwVgpWZytmNm41elVlamJ6WkUrK21CR0lWVUUrOHJtdTBtaGxHbDFNN2VoRFlzNFMyMWlIQzNiZ3prbnNuRlpSV0hzCmdIVmp5L0xqU0p1RGlkZkNFNmNuTU4vUTBjTEtHWEQxdm5Vd1dQMHRPNUZPOHErWUlVMEIxWUNCR1FDRUp2a2kKTWVUbzY2M2ZqZmdGdTJibXNvMU1yaCtzVVV4d2QxMWdYcHg2eVV6b2ViNjFWcXJ2MGJOQ2srR1dzMDhSamNXcApEWXVZRWV0WWJDY215UGNmVXJ6N1NWekFCazFPN0VnTmtyUGpaUzBocUdxbG9aSGlwZWxBNTkxN2xFTEZlSG5FCm5NbTRVdlBUQWdNQkFBRUNnZ0VBYzJlaXFwZXZVODM2VFhCVVRqYmtGKzcwYm5SQVJ6bHVzVnAyUWZtTVhWdUUKTXN4TVFBNkU5bGNRU3ZVZlB4Z2VJQmF2MmRaQ05RZzFHWnJ6bjBhZjZnRXU4b042MGRnRGNYY1hGUkRtRTFhSgpLU3hzOHU0T3UrMS9kNlFvVmR6VXdpdFY1Tk82dG1GSDRxay84akduNm1teXBWQWJUM200V0xxNTN5L3JINktHCkRtNnBVQjNsT3NjVDgyTng4bE5LNmJrNU1xcXNzNnN0UTZUbGZ1MkhwQ3A3Vnl3L3lxRHJBVHVzbkZhQThURlgKYTlUUHlYKzlSKzNjdWdpaktveURTQTRDb3JobXRRbWx6RHpjbk56UHRLeVd1SFpBdUR6T3paZlJma09LVDVRMgo5S0hTVDExbjgrMVFZdFlBZWJOWVdpb3JEa21zR1RlaWFQTkw1UEFJcVFLQmdRRHhrNGFlVTFWZEhnUzZtZmpJCmxjRlNoOE1pdXdlNE95cWdLTndXOXNDa2Y1ZnhRckMyRkJxTmxmYjE0N1kvdFg4cHN6ZllWbUo4eWY5MjBvbWQKYWgrRTZVMHI5M29PTE9aRFE4TjJQeEhJLzlFemF5dVZpb0J6YU13UCszbXZlTWh4WVFUSlhsM3lBUDdjT2FmeAovdEtYL2NoeU9SZjNYWFN5Y1BsTUxwMGx2d0tCZ1FEbkorS1FnS0EwL1YzWXRGRHZFT3p5QS9mUExKSUJ3OVk0CmltU2RRUzhERW1CejFIM1BsUXlLQUU2TzZZRXhBNU1SbUF4ZnNxeGJpaXMrMTVyeTBNc283citQb1RIWVRIQXoKMkk4NHJicE9jVm9RcFRiUm9qQktkSXUwT0xQY202N0xpb3gyUnErZ1RFdWpqVFJOOGZ6bVRBdVYvWjNONmVyOQpCVmxBdG4xKzdRS0JnRStEVWtUY2d2VmlRd1kwVmJtWDZRakVITXRhcWlET2dLbzBxTFI2UlZBZm15QlM1aDBZCkl1RkZZZ0x2RDNhS3c2OHpDUWVRNzF2SmxPZEVSdjFrQjduVW5JMERLTTV2b3Q2eStDdjhlRnNqTUhWdktlcFAKcXhYUmdaRWxJWmxLOVJhMGEwSG9hSjJXREV6cVFVZ2FxckJTWE42VHdqcXVMUkhxczNPS3lEaTdBb0dCQUxuZgo5YXlTOGNDS2VGdFlhN2hCV1BjblA2NmxQV2NUN2YrYk1Wck9YcHBPdmFhR21RQkI3MHBOQXQ2aVg1TmxOMjZ2CllFdlhwZ2NaN0xwa3J5RlB5ZjNKTmRxdUdTSEFIWDFqUjQraEN5NG1zZkN1bVkwcXFVQkZ4VTBQUjNvKzZlaWMKS1dTMlpHVTIxSi9ZWE5YTW43c2tMVERZTm51cy9KdW5JR1VNR1kvbEFvR0FTd0lNenEyTXFBazFEbFZVZ2F3egp4N3REdld3RzI2MjE5UXR2SXAzeVhLbnprWmRKZDFtU2JvbVNrdS82UkhNTkhIZE1rSkVmd0Z5OU9LV2piMFZvCndxYjcyMWRHSkxiTU9yZzRaTll2SW1UekJCcFllQjNseDZzSEdtRTVmWFNWd0xlQzB2QWVZYUVSTEtia0VqZFQKMVAydnZSYUNKczhweWFjaU5hQkJTVDQ9Ci0tLS0tRU5EIFBSSVZBVEUgS0VZLS0tLS0K
+kind: Secret
+metadata:
+  name: kubernetes-dashboard-tls
+  namespace: kube-system
+type: kubernetes.io/tls
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: kubernetes-dashboard
+  namespace: kube-system
+  annotations:
+   kubernetes.io/ingress.class: traefik
+spec:
+  rules:
+    - host: kubernetes.tcs-core
+      http:
+        paths:
+        - path: /
+          backend:
+            serviceName: kubernetes-dashboard
+            servicePort: 443
+  tls:
+    - secretName: kubernetes-dashboard-tls

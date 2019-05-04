@@ -1,0 +1,50 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: tcs-api
+  namespace: {{ .Values.tcsCore.namespace }}
+spec:
+  type: ClusterIP
+  ports:
+    - port: 9000
+      protocol: TCP
+      targetPort: 8080
+      name: api
+  selector:
+    component: tcs-api
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tcs-api
+  namespace: {{ .Values.tcsCore.namespace }}  
+spec:
+  selector:
+    matchLabels:
+      component: tcs-api
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        component: tcs-api
+    spec:
+      serviceAccountName: tcs-account
+      containers:
+        - name: tcs-api
+          image: {{ .Values.tcsCore.Api.image }}
+          ports:
+            - containerPort: 8080
+              protocol: TCP
+          envFrom:
+            - configMapRef:
+                name: tcs-config
+          imagePullPolicy: Always
+          volumeMounts:
+            - name: tcs-volume
+              mountPath: /origin
+      volumes:
+        - name: tcs-volume
+          persistentVolumeClaim:
+            claimName: tcs-volume
+      imagePullSecrets:
+        - name: gitlab-token

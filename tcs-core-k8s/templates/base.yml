@@ -1,0 +1,101 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: {{ .Values.tcsCore.namespace }}
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: weave
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name:  tcs-account  
+  namespace: {{ .Values.tcsCore.namespace }}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: tcs-role
+  namespace: {{ .Values.tcsCore.namespace }}
+rules:
+  - apiGroups: [""] # "" indicates the core API group
+    resources: ["configmaps"]
+    verbs: ["list", "create", "patch", "delete"]
+  - apiGroups: [""] # "" indicates the core API group
+    resources: ["pods"]
+    verbs: ["list"]
+  - apiGroups: ["apps"]
+    resources: ["deployments"]
+    verbs: ["list", "create", "patch", "delete"]
+  - apiGroups: ["apps"]
+    resources: ["replicasets"]
+    verbs: ["list"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: tcs-role-binding
+  namespace: {{ .Values.tcsCore.namespace }}
+subjects:
+  - kind: ServiceAccount
+    name: tcs-account
+    namespace: {{ .Values.tcsCore.namespace }}
+roleRef:
+  kind: Role
+  name: tcs-role
+  apiGroup: rbac.authorization.k8s.io
+---
+apiVersion: v1
+kind: Secret
+type: kubernetes.io/dockerconfigjson
+metadata:
+  name: gitlab-token
+  namespace: {{ .Values.tcsCore.namespace }} 
+data:
+  .dockerconfigjson: eyJhdXRocyI6eyJyZWdpc3RyeS5naXRsYWIuY29tIjp7InVzZXJuYW1lIjoibWlndWVsYW5nZWwuc2FudGlhZ29AaG90bWFpbC5jb20iLCJwYXNzd29yZCI6IkZtVWNvYlM5YzRXWXBVMlZhLXFOIiwiYXV0aCI6ImJXbG5kV1ZzWVc1blpXd3VjMkZ1ZEdsaFoyOUFhRzkwYldGcGJDNWpiMjA2Um0xVlkyOWlVemxqTkZkWmNGVXlWbUV0Y1U0PSJ9fX0=
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: tcs-volume
+  namespace: {{ .Values.tcsCore.namespace }}
+spec:
+  capacity:
+    storage: 10Gi
+  accessModes:
+    - ReadWriteMany
+  persistentVolumeReclaimPolicy: Retain
+  hostPath:
+    path: /volume
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: tcs-volume
+  namespace: {{ .Values.tcsCore.namespace }}
+spec:
+  resources:
+    requests:
+      storage: 10Gi
+  accessModes:
+    - ReadWriteMany
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: weave-secret
+  namespace: weave
+type: Opaque
+stringData:
+  auth: tcs-core:$apr1$KvnHhO6L$oEIgjuBofou5PKThvKVoM1
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: traefik-secret
+  namespace: kube-system
+type: Opaque
+stringData:
+  auth: tcs-core:$apr1$KvnHhO6L$oEIgjuBofou5PKThvKVoM1

@@ -1,0 +1,24 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: tcs-config
+  namespace: {{ .Values.tcsCore.namespace }}
+data:
+  ### SYSTEM ###
+  TCS_DEBUG: {{ quote .Values.tcsCore.debug }}
+  TCS_DEBUG_PORT: {{ quote .Values.tcsCore.debugPort }}
+
+  ### API ####
+  TCS_API_PORT: {{ quote .Values.tcsCore.Api.port }}
+
+  ### ORIGIN ###
+  TCS_ORIGIN_URL: {{ quote .Values.tcsCore.Origin.url }}
+  TCS_ORIGIN_PATH: {{ quote .Values.tcsCore.Origin.path }}
+
+  ### PROXY ###
+  TCS_PROXY_IMAGE: {{ quote .Values.tcsCore.Proxy.image }}
+
+  ### PACKAGER ###
+  TCS_PACKAGER_IMAGE: {{ quote .Values.tcsCore.Packager.image }}
+  TCS_PACKAGER_UDP_REUSE: {{ quote .Values.tcsCore.Packager.udpReuse }}
+  TCS_PACKAGER_UDP_BUFFER: {{ int64 .Values.tcsCore.Packager.udpBuffer | quote }}

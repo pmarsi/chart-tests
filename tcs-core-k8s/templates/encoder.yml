@@ -1,0 +1,53 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: tcs-encoder
+  namespace: tcs-core  
+spec:
+  type: NodePort
+  ports:
+    - port: 9003
+      protocol: TCP
+      targetPort: 80
+  selector:
+    component: tcs-encoder
+    class: titanlive  
+---
+apiVersion: apps/v1 
+kind: Deployment
+metadata:
+  name: tcs-encoder
+  namespace: tcs-core    
+spec:
+  selector:
+    matchLabels:      
+      component: tcs-encoder
+      class: titanlive
+  replicas: 1
+  template:
+    metadata:
+      labels:        
+        component: tcs-encoder
+        class: titanlive
+    spec:         
+      containers:
+        - name: titanlive
+          image: registry.gitlab.com/mp-projects/tv-up/tcs-core/encoder/titanlive:4.1.15.2
+          ports:
+            - containerPort: 80
+              protocol: TCP
+          securityContext:
+            privileged: true
+          volumeMounts:
+            - mountPath: /sys/fs/cgroup
+              name: cgroup
+          resources:
+            requests:
+              memory: "2Gi"
+              cpu: "3"            
+      imagePullSecrets:
+        - name: gitlab-token
+      volumes:
+        - name: cgroup
+          hostPath:
+            path: /sys/fs/cgroup

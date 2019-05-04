@@ -1,0 +1,57 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: tcs-core
+  namespace: {{ .Values.tcsCore.namespace }}
+spec:
+  type: ClusterIP
+  ports:
+    - port: 9002
+  name: tcs-origin
+  namespace: tcs-core
+spec:
+  type: ClusterIP
+  ports:
+    - name: http
+      port: 9001
+      protocol: TCP
+      targetPort: 8080
+    - name: https
+      port: 9002
+      protocol: TCP
+      targetPort: 4443
+  selector:
+    component: tcs-origin
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tcs-origin
+  namespace: {{ .Values.tcsCore.namespace }}  
+spec:
+  selector:
+    matchLabels:
+      component: tcs-origin
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        component: tcs-origin
+    spec:
+      containers:
+        - name: tcs-origin 
+          image: {{ .Values.tcsCore.Origin.image }}
+          ports:
+            - containerPort: 8080
+              protocol: TCP
+            - containerPort: 4443
+              protocol: TCP
+          volumeMounts:
+            - name: tcs-volume
+              mountPath: /origin
+      volumes:
+        - name: tcs-volume
+          persistentVolumeClaim:
+            claimName: tcs-volume
+      imagePullSecrets:
+        - name: gitlab-token

@@ -1,0 +1,23 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: tcs-packager-profile-default
+  namespace: {{ .Values.tcsCore.namespace }}
+  labels:        
+    component: tcs-packager
+    class: profile
+data:
+  profile: |
+    {
+      "name": "default",
+      "chunk": {
+        "segment_duration": 2      
+      },
+      "dash": {
+        "template": "time",        
+        "window_length": 600,
+        "min_buffer_time": 2,
+        "min_update_period": 2,
+        "default_language": "spa"
+      }
+    }  
